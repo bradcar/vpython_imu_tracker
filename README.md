@@ -24,6 +24,14 @@ https://www.youtube.com/watch?v=S77r-P6YxAU
 
 ## Output Images
 
+Sample Images
+<img src="/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-1.png" width="300"/>
+
+
+![Output1](/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-1.png)
+
+![Output2](/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-2.png)
+
 
 ## Euler Angles, Gimbal Lock, and Quaternions
 

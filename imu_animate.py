@@ -3,6 +3,9 @@
 Visual tracking of IMU output on Mac using Quaternion transformations.
 Quaternions represent rotation with multiple "single axis and rotation angles".
 
+Uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
+https://github.com/bradcar/bno08x_i2c_spi_MicroPython
+
 Displays Static World axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z).
 Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.
 Creates Breadboard representation to match IRL to show motion.
