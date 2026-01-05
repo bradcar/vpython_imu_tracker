@@ -24,7 +24,7 @@ https://www.youtube.com/watch?v=S77r-P6YxAU
 
 ## Output Images
 
-Sample Images updated at 100 frames/sec and sensors updated at 100Hz.
+Sample Images updated at 200 frames/sec and sensors updated at 200Hz.
 
 ![Output1](imgs/vpython-imu-tracker-1.png)
 
