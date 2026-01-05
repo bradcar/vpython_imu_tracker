@@ -1,10 +1,20 @@
+# vpython_imu_tracker.py
+"""
+visual tracking of IMU output on mac
+Totally inspired by Paul McWhorter instruction videos
+9-Axis IMU LESSON 20: Vpython Visualization of Roll, Pitch, and Yaw
+https://www.youtube.com/watch?v=7B3KnAj7xzY
+"""
 import numpy as np
 import serial
+from time import sleep
+from math import sin, cos
 from vpython import *
 
 # conversion factors
 TO_RAD = 2. * np.pi / 360.
 TO_DEG = 1. / TO_RAD
+YAW_OFFSET = np.pi
 
 
 def create_breadboard():
@@ -35,19 +45,11 @@ def create_arrows():
     return x_arrow, y_arrow, z_arrow, right_arrow, up_arrow, front_arrow
 
 
-def read_sensor_data(pico_data):
-    """read data from serial port"""
-    data_packet = pico_data.readline()
-    data_packet = str(data_packet, 'utf-8')
-    split_packet = data_packet.split(",")
-    roll = float(split_packet[0]) * TO_RAD
-    pitch = float(split_packet[1]) * TO_RAD
-    yaw = float(split_packet[2]) * TO_RAD
-
-    return roll, pitch, yaw
-
-
 def main():
+    """
+    Reads data from bno086 serial port, Must run as main.py on bno086, because USB-C can not share data with Thonny.
+
+    """
     # view screen
     scene.range = 5
     scene.width = 600
@@ -64,26 +66,40 @@ def main():
     print("Starting data processing...")
 
     while True:
-        while pico_data.inWaiting() == 0:  # no data pass
-            pass
+        rate(50)
 
-        roll, pitch, yaw = read_sensor_data(pico_data)
+        line = pico_data.readline()
+        if not line:
+            continue
 
-        print(f"roll={roll * TO_DEG:.1f}, pitch={pitch * TO_DEG:.1f}, yaw={yaw * TO_DEG:.1f}")
+        try:
+            roll, pitch, yaw = map(float, line.decode().strip().split(","))
+        except ValueError:
+            continue
 
-        k = vector(cos(yaw) * cos(pitch), sin(pitch), sin(yaw) * cos(pitch))
+        #print(f"Roll: {roll}, Pitch: {pitch}, Yaw: {yaw}")
 
-        y = vector(0, 1, 0)
-        # cross product RHR (renormalizes to unit vector)
-        s = cross(k, y)
-        v = cross(s, k)
+        roll *= TO_RAD
+        pitch *= TO_RAD
+        yaw = -yaw * TO_RAD + YAW_OFFSET
 
-        front_arrow.axis = k
-        right_arrow.axis = s
-        up_arrow.axis = v
+        forward = vector(
+            cos(yaw) * cos(pitch),
+            sin(pitch),
+            sin(yaw) * cos(pitch)
+        ).norm()
 
-        board.axis = k
-        board.up = v
+        world_up = vector(0, 1, 0)
+
+        right = cross(forward, world_up).norm()
+        up = cross(right, forward).norm()
+
+        front_arrow.axis = forward
+        right_arrow.axis = right
+        up_arrow.axis = up
+
+        board.axis = forward
+        board.up = up
 
         front_arrow.length = 3
         right_arrow.length = 4
