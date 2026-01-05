@@ -24,13 +24,11 @@ https://www.youtube.com/watch?v=S77r-P6YxAU
 
 ## Output Images
 
-Sample Images
-<img src="/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-1.png" width="300"/>
+Sample Images updated at 100 frames/sec and sensors updated at 100Hz.
 
+![Output1](imgs/vpython-imu-tracker-1.png)
 
-![Output1](/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-1.png)
-
-![Output2](/Users/bradcarlile/Documents/GitHub/vpython_imu_tracker/imgs/vpython-imu-tracker-2.png)
+![Output2](imgs/vpython-imu-tracker-2.png)
 
 
 ## Euler Angles, Gimbal Lock, and Quaternions
