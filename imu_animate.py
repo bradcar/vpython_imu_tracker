@@ -1,4 +1,4 @@
-# vpython_imu_tracker.py
+# vpython_imu_tracker.py  - Runs on Mac
 """
 Visual tracking of IMU output on Mac using Quaternion transformations.
 Quaternions represent rotation with multiple "single axis and rotation angles".
