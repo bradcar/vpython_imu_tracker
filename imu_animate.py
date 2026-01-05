@@ -17,13 +17,24 @@ With Euler angle implementations, some orientations have multiple valid represen
 Quaternions avoid this by providing a unique representation for every possible orientation.
 https://en.wikipedia.org/wiki/Gimbal_lock
 
+200 Hz printing of Quaternions over USB-C with 230,400 buadrate (bps) which should have ~ 50% headroom.
+Time to read 30 chars
+
+- data comes at 68,000 buadrate/bps = 6,800 * 10bit,
+  - assuming (8b data & 2 bits for start & stop)
+  - 6,800 = 34 chars /0.005sec (5 ms)
+  - up to 34 chars for 4 Quaternions & 2 bytes for "\r\n"
+  - Each Quaterion up to 8 chars: pos numbers"0.6643," and negative "-0.0003,"
+
+Earlier code had 100 Hz sensor updates (Quaternions) over USB-C with 115,200 buadrate (bps) which had ~ 50% headroom.
+
 Credits:
 Inspired by Paul McWhorter's instruction videos
 9-Axis IMU LESSON 21: Visualizing 3D Rotations in Vpython using Quaternions
 https://www.youtube.com/watch?v=S77r-P6YxAU
 """
 import math
-from time import sleep
+from time import sleep, perf_counter
 
 import serial
 from vpython import *
@@ -97,7 +108,7 @@ def main():
     board_body = create_body_breadboard()
 
     # streaming data port from Pico/BNO086
-    pico = serial.Serial("/dev/cu.usbmodem2101", 115200, timeout=0.05)
+    pico = serial.Serial("/dev/cu.usbmodem2101", 230400, timeout=0.05)
     sleep(1)
 
     # VPython Reference Vectors - the static world axes
@@ -107,13 +118,36 @@ def main():
 
     first_q = None
 
+    # timing
+    last_time = perf_counter()
+    loop_counts = 0
+    total_time = 0
+
     while True:
-        rate(200)
+        # 400Hz gives 2.5ms beat, gated by 200Hz sensor updates (5ms)
+        rate(400)
+        # if more than 2 packets waiting, skip old ones to catch up
+        while pico.in_waiting > 60:
+            pico.readline()
         line = pico.readline()
         if not line: continue
 
         parts = line.decode(errors="ignore").strip().split(",")
-        if len(parts) != 4: continue
+        if len(parts) != 4:
+            continue
+
+        # Time per iteration Averaged it over 100 loops
+        now = perf_counter()
+        delta = (now - last_time) * 1000  # Convert to milliseconds
+        last_time = now
+        total_time += delta
+        loop_counts += 1
+
+        if loop_counts >= 400:
+            avg_ms = total_time / loop_counts
+            print(f"Update Freq: {1000 / avg_ms:.1f} Hz, Duration: {avg_ms:.2f} ms")
+            loop_counts = 0
+            total_time = 0
 
         try:
             # Pico 2 W sensor sends: qx, qy, qz, qr

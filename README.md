@@ -1,7 +1,7 @@
 # vpython_imu_tracker
 using vpython to show IMU orientation
 
-Visual tracking of IMU output on Mac using Quaternion transformations.
+Visual tracking of IMU output on Mac using Quaternion transformations at 200 fps (update 5ms)
 Quaternions represent rotation with multiple "single axis and rotation angles".
 
 Uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
@@ -30,6 +30,18 @@ Sample Images updated at 100 frames/sec and sensors updated at 100Hz.
 
 ![Output2](imgs/vpython-imu-tracker-2.png)
 
+## Loop timing
+
+200 Hz printing of Quaternions over USB-C with 230,400 buadrate (bps) which should have ~ 50% headroom.
+Time to read 30 chars 
+    
+- data comes at 68,000 buadrate/bps = 6,800 * 10bit, 
+  - assuming (8b data & 2 bits for start & stop)
+  - 6,800 = 34 chars /0.005sec (5 ms)
+  - up to 34 chars for 4 Quaternions & 2 bytes for "\r\n"
+  - Each Quaterion up to 8 chars: pos numbers"0.6643," and negative "-0.0003,"
+
+Earlier code had 100 Hz sensor updates (Quaternions) over USB-C with 115,200 buadrate (bps) which had ~ 50% headroom.
 
 ## Euler Angles, Gimbal Lock, and Quaternions
 
