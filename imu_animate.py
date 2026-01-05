@@ -64,10 +64,10 @@ def create_body_breadboard():
     # usbc = box(length=.2, height=.1, width=.25,
     #            pos=vector(-2.9, .15, 0), opacity=0.9, color=color.black)
     bno = box(length=1, height=.1, width=.8,
-            pos=vector(-.5, .15, 0), opacity=0.9, color=color.red)
+              pos=vector(-.5, .15, 0), opacity=0.9, color=color.red)
     bno_chip = box(length=.2, height=.1, width=.2,
-            pos=vector(-.45, .20, 0), opacity=0.9, color=color.black)
-    return compound([breadboard, pico, bno,bno_chip])
+                   pos=vector(-.45, .20, 0), opacity=0.9, color=color.black)
+    return compound([breadboard, pico, bno, bno_chip])
 
 
 # Quaternion helper functions - Hamilton names r, i, j, k
