@@ -60,14 +60,16 @@ def create_body_breadboard():
     breadboard = box(length=6, height=.2, width=2, opacity=0.6, color=color.white)
     # Pico 2 W is toward the left of the board
     pico = box(length=1.7, height=.1, width=.6,
-               pos=vector(-2, .15, 0), opacity=0.9, color=color.green)
+               pos=vector(-2, .15, 0), opacity=1.0, color=color.green)
     # usbc = box(length=.2, height=.1, width=.25,
     #            pos=vector(-2.9, .15, 0), opacity=0.9, color=color.black)
     bno = box(length=1, height=.1, width=.8,
               pos=vector(-.5, .15, 0), opacity=0.9, color=color.red)
     bno_chip = box(length=.2, height=.1, width=.2,
-                   pos=vector(-.45, .20, 0), opacity=0.9, color=color.black)
-    return compound([breadboard, pico, bno, bno_chip])
+                   pos=vector(-.45, .20, 0), opacity=1.0, color=color.black)
+    bno_orientation = box(length=.05, height=.01, width=.05,
+                   pos=vector(-.5, .26, -0.05), opacity=1.0, color=color.white)
+    return compound([breadboard, pico, bno, bno_chip, bno_orientation])
 
 
 # Quaternion helper functions - Hamilton names r, i, j, k
