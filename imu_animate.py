@@ -2,12 +2,16 @@
 """
 Visual tracking of IMU output on Mac using Quaternion transformations.
 Quaternions represent rotation with multiple "single axis and rotation angles".
+We are treating the BNO086 quaternion as a body → world rotation.
+
+Suggestion: At startup, the breadboard should be still and flat on a table at script startup. This is because the
+first packet defines "Level" for the rest of the session.
 
 Uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
 https://github.com/bradcar/bno08x_i2c_spi_MicroPython
 Pico 2 W outputs driven by main.py
 
-Displays Static World axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z).
+Vpython's static World display axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z).
 Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.
 Creates Breadboard representation to match IRL to show motion.
 Breadboard in white, with Pico mounted on top of board in Green and BNO086 in Red.
@@ -28,27 +32,67 @@ Time to read 30 chars
 
 Earlier code had 100 Hz sensor updates (Quaternions) over USB-C with 115,200 buadrate (bps) which had ~ 50% headroom.
 
+## Vpython Conventions:
+Default Axes in Vpython
+ - X axis → X+ right screen, X- left screen
+ - Y axis → Y+ up screen, Y- down screen
+ - Z axis → Z+ toward camera (out) and Z- away from camera (in)
+
+       +Y
+       |   -Z
+       | /
+       o------ +X
+
+Vpython uses Positive rotation Right-Hand Rule about each axis:
+ - Around +X: Y moves toward Z.
+ - Around +Y: Z moves toward X.
+ - Around +Z: X moves toward Y.
+
+A quaternion rotation rotates a vector usin gstandard 3D right-handed rotations.:
+    v_rot = q * v * q_conjugate
+
+Where:
+ - v is treated as a pure quaternion (0, vx, vy, vz)
+ - q must be unit-normalized
+ - q_conjugate = (r, -i, -j, -k)
+
+ In practice, VPython-style helper math often uses the Rodrigues' rotation formula optimized vector form:
+
+    v_rot = v + 2 * cross(q_vec, cross(q_vec, v) + q_r * v)
+
+Mappying between VPython and Sensor:
+VPython uses a standard Right-Handed System (RHS) for its "World" coordinates.
+
+X-Axis (Red): Points Right and Left.
+ * Rotation: Roll. Spinning the object like a screw.
+
+Y-Axis (Green): Points Up and Down.
+ * Rotation: Yaw. Turning the object like a compass needle on a table.
+
+Z-Axis (Blue): Points Out of the screen (toward you) and In.
+ * Rotation: Pitch. Tilting the nose of the object up or down.
+
 Credits:
 Inspired by Paul McWhorter's instruction videos
 9-Axis IMU LESSON 21: Visualizing 3D Rotations in Vpython using Quaternions
 https://www.youtube.com/watch?v=S77r-P6YxAU
 """
 import math
-from time import sleep, perf_counter
+from time import sleep
 
 import serial
-from vpython import *
+from vpython import box, vector, arrow, color, rate, scene, compound, cross
 
 
 def create_world_arrows():
-    # Static World axes: r in x, green in y, blue in z, RGB in RHS
+    """ Static World axes: r in x, green in y, blue in z, RGB in RHS """
     arrow(axis=vector(1, 0, 0), length=2, shaftwidth=.05, color=color.red)  # +X
     arrow(axis=vector(0, 1, 0), length=2, shaftwidth=.05, color=color.green)  # +Y
     arrow(axis=vector(0, 0, 1), length=2, shaftwidth=.05, color=color.blue)  # +Z
 
 
 def create_body_arrows():
-    # Dynamic IMU body axes: r in x, green in y, blue in z, RGB in RHS
+    """ IMU body axes arrows that move with board: r in x, green in y, blue in z, RGB in RHS """
     arrow_x = arrow(length=3, shaftwidth=.1, color=color.red)
     arrow_y = arrow(length=3, shaftwidth=.1, color=color.green)
     arrow_z = arrow(length=3, shaftwidth=.1, color=color.blue)
@@ -56,24 +100,34 @@ def create_body_arrows():
 
 
 def create_body_breadboard():
+    """ Create breadboard image """
     # Length along X, Height along Y, Width along Z
     breadboard = box(length=6, height=.2, width=2, opacity=0.6, color=color.white)
+
     # Pico 2 W is toward the left of the board
     pico = box(length=1.7, height=.1, width=.6,
                pos=vector(-2, .15, 0), opacity=1.0, color=color.green)
-    # usbc = box(length=.2, height=.1, width=.25,
+
+    # usb-c = box(length=.2, height=.1, width=.25,
     #            pos=vector(-2.9, .15, 0), opacity=0.9, color=color.black)
+
+    # show BNO black chip on red sensor board with chip orientation white dot
     bno = box(length=1, height=.1, width=.8,
               pos=vector(-.5, .15, 0), opacity=0.9, color=color.red)
     bno_chip = box(length=.2, height=.1, width=.2,
                    pos=vector(-.45, .20, 0), opacity=1.0, color=color.black)
     bno_orientation = box(length=.05, height=.01, width=.05,
-                   pos=vector(-.5, .26, -0.05), opacity=1.0, color=color.white)
+                          pos=vector(-.5, .26, -0.05), opacity=1.0, color=color.white)
+
     return compound([breadboard, pico, bno, bno_chip, bno_orientation])
 
 
 # Quaternion helper functions - Hamilton names r, i, j, k
 def quaternion_rotate(q, v):
+    """
+    Rotate vector v by unit quaternion q using optimized Rodrigues formula.
+    Equivalent to: q * v * q_conjugate
+    """
     qr, qi, qj, qk = q
     qv = vector(qi, qj, qk)
     return v + 2 * cross(qv, cross(qv, v) + qr * v)
@@ -105,93 +159,71 @@ def quaternion_normalize(qr: float, qi: float, qj: float, qk: float) -> tuple:
 
 def main():
     scene.range = 5
-    scene.forward = vector(-1, -1, -1)  # Camera angle
+    scene.forward = vector(-1.60972, -0.635176, -0.0731288)
 
     create_world_arrows()
     arrow_body_x, arrow_body_y, arrow_body_z = create_body_arrows()
     board_body = create_body_breadboard()
 
-    # streaming data port from Pico/BNO086
+    # VPython reference vectors
+    world_x, world_y, world_z = vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1)
+
+    # Serial connection
     pico = serial.Serial("/dev/cu.usbmodem2101", 230400, timeout=0.05)
     sleep(1)
 
-    # VPython Reference Vectors - the static world axes
-    world_x = vector(1, 0, 0)
-    world_y = vector(0, 1, 0)
-    world_z = vector(0, 0, 1)
-
     first_q = None
 
-    # timing
-    last_time = perf_counter()
-    loop_counts = 0
-    total_time = 0
-
     while True:
-        # 400Hz gives 2.5ms beat, gated by 200Hz sensor updates (5ms)
         rate(400)
-        # if more than 2 packets waiting, skip old ones to catch up
+
+        # if vpython lags sensor, flush buffer to catch up
         while pico.in_waiting > 60:
-            pico.readline()
+            pico.reset_input_buffer()
+
         line = pico.readline()
-        if not line: continue
+        if not line:
+            continue
 
         parts = line.decode(errors="ignore").strip().split(",")
         if len(parts) != 4:
             continue
 
-        # Time per iteration Averaged it over 100 loops
-        now = perf_counter()
-        delta = (now - last_time) * 1000  # Convert to milliseconds
-        last_time = now
-        total_time += delta
-        loop_counts += 1
-
-        if loop_counts >= 400:
-            avg_ms = total_time / loop_counts
-            print(f"Update Freq: {1000 / avg_ms:.1f} Hz, Duration: {avg_ms:.2f} ms")
-            loop_counts = 0
-            total_time = 0
-
         try:
-            # Pico 2 W sensor sends: qx, qy, qz, qr
-            sensor_qi, sensor_qj, sensor_qk, sensor_qr = map(float, parts)
+            s_qr, s_qi, s_qj, s_qk = map(float, parts)
 
-            # Map Sensor components to VPython's World components,
-            # NOTE: REMAP HERE if RE-OREINTATE SENSOR
-            # qi (rotation around world X) is Roll
-            # qj (rotation around world Y) is Yaw
-            # qk (rotation around world Z) is Pitch
-            qi = sensor_qj
-            qj = sensor_qk
-            qk = sensor_qi
-            qr = sensor_qr
+            # Re-mapping of BNO sensor to VPython
+            # qi(X) = −s_qi  # Roll Negated which changes CW to CCW
+            # qj(Y) = s_qk   # Yaw Sensor's "Z" is VPython's "Up"
+            # qk(Z) = s_qj   # Pitch Sensor's "Y" is VPython's "Forward"
+            qr = s_qr
+            qi = -s_qi  # Roll (X)
+            qj = s_qk  # Yaw  (Y)
+            qk = s_qj  # Pitch (Z)
+            q_norm = quaternion_normalize(qr, qi, qj, qk)
+
+            # Assumes sensor is motionless at start and data is correct
+            if first_q is None:
+                first_q = quaternion_conjugate(q_norm)
+                print("\n[INFO] Sensor Zeroed. Starting tracking...")
+                continue
+
+            # first_q is conjufate of startup orientation, compute relative rotation in world frame
+            q_rel = quaternion_multiply(first_q, q_norm)
+
+            # Update rotating body and arrows attached to it
+            body_x = quaternion_rotate(q_rel, world_x)
+            body_y = quaternion_rotate(q_rel, world_y)
+            body_z = quaternion_rotate(q_rel, world_z)
+
+            arrow_body_x.axis = body_x
+            arrow_body_y.axis = body_y
+            arrow_body_z.axis = body_z
+            board_body.axis = body_x.norm()
+            board_body.up = body_y.norm()
+
         except ValueError:
             continue
-
-        q = quaternion_normalize(qr, qi, qj, qk)
-
-        # Set Reference Frame - relative rotation from startup position:
-        # Zeroing ensures board starts level on the screen regardless of sensor is oriented at startup
-        # q_rel = q_reference_inverse * q_current
-        if first_q is None:
-            first_q = q
-            continue
-        q_rel = quaternion_multiply(quaternion_conjugate(first_q), q)
-
-        # Rotate World vectors to find the current Body vectors
-        body_x = quaternion_rotate(q_rel, world_x)
-        body_y = quaternion_rotate(q_rel, world_y)
-        body_z = quaternion_rotate(q_rel, world_z)
-
-        # Update Arrow body, x left/right, y: up/down, Z: in/out
-        arrow_body_x.axis = body_x
-        arrow_body_y.axis = body_y
-        arrow_body_z.axis = body_z
-
-        # Update Breadboard body,  x: left/right, y: up/down
-        board_body.axis = body_x
-        board_body.up = body_y
 
 
 if __name__ == "__main__":

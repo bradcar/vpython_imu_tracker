@@ -57,3 +57,31 @@ Most computer games use this implementation for smooth and predictable graphics.
 - https://en.wikipedia.org/wiki/Gimbal_lock
 - https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
 - https://www.youtube.com/watch?v=zjMuIxRvygQ
+
+## Vpython Conventions:
+Default Axes in Vpython
+ - X axis → X+ right screen, X- left screen
+ - Y axis → Y+ up screen, Y- down screen
+ - Z axis → Z+ toward camera (out) and Z- away from camera (in)
+
+       +Y
+       |   -Z
+       | /
+       o------ +X
+    
+Vpython uses Positive rotation Right-Hand Rule about each axis:
+ - Around +X: Y moves toward Z. 
+ - Around +Y: Z moves toward X.
+ - Around +Z: X moves toward Y.
+
+A quaternion rotation rotates a vector using standard 3D right-handed rotations.:
+    v_rot = q * v * q_conjugate
+
+Where:
+ - v is treated as a pure quaternion (0, vx, vy, vz)
+ - q must be unit-normalized 
+ - q_conjugate = (r, -i, -j, -k)
+
+ In practice, VPython-style helper math often uses the Rodrigues' rotation formula optimized vector form:
+
+    v_rot = v + 2 * cross(q_vec, cross(q_vec, v) + q_r * v)
