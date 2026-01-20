@@ -1,16 +1,23 @@
 # vpython_imu_tracker
-using vpython to show IMU orientation
+Displays IMU data with VPython to show IMU orientation with updates at 200 Hz. 
 
-Visual tracking of IMU output on Mac using Quaternion transformations at 200 fps (update 5ms)
-Quaternions represent rotation with multiple "single axis and rotation angles".
+The imU_animate.py creates Breadboard representation to match IRL to show motion and oreientation.
+Breadboard in translucent white, with Raspberry Pi Pico mounted on top of board in Green and BNO086 in Red. 
+In addition, short/thick  arrows showing the breadboard's orientation.
 
-Uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
+Longer thick arrows show the static World axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z). 
+Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.
+
+<img alt="Output1" src="imgs/vpython-imu-tracker-1.png" width="350"/> <img alt="Output2" src="imgs/vpython-imu-tracker-2.png" width="350"/>
+
+This code uses an IMU's quaternion output(r, i, j, k) at 200 fps (update 5ms).
+This repo also contains quaternion_output.py that can be run using Micropython on a conroller accessing a BNO08x sensor.
+It uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
 https://github.com/bradcar/bno08x_i2c_spi_MicroPython
 
-Displays Static World axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z).
-Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.
-Creates Breadboard representation to match IRL to show motion.
-Breadboard in white, with Pico mounted on top of board in Green and BNO086 in Red.
+Quaternions uniquely represent every rotation in 3D space. 
+Because of this, quaternions are used in computer game implmentations. 
+This Vpython code is completely implemented using quaternions.
 
 The reason we don't use Euler Angles is that have issues with Gimbal Lock.
 With Euler angle implementations, some orientations have multiple valid representations.
@@ -22,12 +29,6 @@ Inspired by Paul McWhorter's instruction videos
 9-Axis IMU LESSON 21: Visualizing 3D Rotations in Vpython using Quaternions
 https://www.youtube.com/watch?v=S77r-P6YxAU
 
-## Output Images
-
-Sample Images updated at 200 frames/sec and sensors updated at 200Hz.
-
-<img alt="Output1" src="imgs/vpython-imu-tracker-1.png" width="350"/> <img alt="Output2" src="imgs/vpython-imu-tracker-2.png" width="350"/>
-
 ## Loop timing
 
 200 Hz printing of Quaternions over USB-C with 230,400 buadrate (bps) which should have ~ 50% headroom.
@@ -37,7 +38,7 @@ Time to read 30 chars
   - assuming (8 bits data & 2 bits for start & stop)
   - 6,800 = 34 chars /0.005 sec (5 ms)
   - up to 34 chars for 4 Quaternions & 2 bytes for "\r\n"
-  - Each Quaterion up to 8 chars: pos numbers"0.6643," and negative "-0.0003,"
+  - Each Quaterion up to 8 chars: pos numbers "0.6643," and negative "-0.0003,"
 
 Earlier code had 100 Hz sensor updates (Quaternions) over USB-C with 115,200 buadrate (bps) which had ~ 50% headroom.
 
