@@ -34,8 +34,8 @@ Sample Images updated at 200 frames/sec and sensors updated at 200Hz.
 Time to read 30 chars 
     
 - data comes at 68,000 buadrate/bps = 6,800 * 10bit, 
-  - assuming (8b data & 2 bits for start & stop)
-  - 6,800 = 34 chars /0.005sec (5 ms)
+  - assuming (8 bits data & 2 bits for start & stop)
+  - 6,800 = 34 chars /0.005 sec (5 ms)
   - up to 34 chars for 4 Quaternions & 2 bytes for "\r\n"
   - Each Quaterion up to 8 chars: pos numbers"0.6643," and negative "-0.0003,"
 
