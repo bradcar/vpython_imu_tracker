@@ -44,6 +44,8 @@ Earlier code had 100 Hz sensor updates (Quaternions) over USB-C with 115,200 bua
 
 ## Euler Angles, Gimbal Lock, and Quaternions
 
+Rortations can be represented with three angles (rotation in x, y, and z).
+This representation is called Euler angles. 
 Euler angles suffer from a well-known issue called Gimbal Lock.
 Gimbal lock occurs when two rotation axes align, which removes one degree of freedom. When a degree of freedom is
 lost, some orientations will have multiple valid representations.
