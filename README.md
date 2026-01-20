@@ -26,8 +26,7 @@ https://www.youtube.com/watch?v=S77r-P6YxAU
 
 Sample Images updated at 200 frames/sec and sensors updated at 200Hz.
 
-<img alt="Output1" src="imgs/vpython-imu-tracker-1.png" width="300"/>
-<img alt="Output2" src="imgs/vpython-imu-tracker-2.png" width="300"/>
+<img alt="Output1" src="imgs/vpython-imu-tracker-1.png" width="350"/> <img alt="Output2" src="imgs/vpython-imu-tracker-2.png" width="350"/>
 
 ## Loop timing
 
