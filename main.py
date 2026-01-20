@@ -41,9 +41,9 @@ def main():
         bno.update_sensors()
 
         if bno.quaternion.updated:
-            qi, qj, qk, qr = bno.quaternion
-            # print(f"{qi:.4f},{qj:.4f},{qk:.4f},{qr:.4f")
-            output = f"{qi:.4f},{qj:.4f},{qk:.4f},{qr:.4f}\n"
+            qr, qi, qj, qk = bno.quaternion
+            # print(f"{qr:.4f},{qi:.4f},{qj:.4f},{qk:.4f}")
+            output = f"{qr:.4f},{qi:.4f},{qj:.4f},{qk:.4f}\n"
             sys.stdout.write(output)
 
 
