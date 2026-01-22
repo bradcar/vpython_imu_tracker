@@ -66,7 +66,7 @@ Default Axes in Vpython
  - Z axis → Z+ toward camera (out) and Z- away from camera (in)
 
        +Y
-       |   -Z
+       |  -Z
        | /
        o------ +X
     
