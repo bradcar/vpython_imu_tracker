@@ -9,7 +9,7 @@ first packet defines "Level" for the rest of the session.
 
 Uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
 https://github.com/bradcar/bno08x_i2c_spi_MicroPython
-Pico 2 W outputs driven by quaternion_output_spi.py
+Pico 2 W outputs driven by quaternion_stream_spi.py
 
 Vpython's static World display axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z).
 Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.

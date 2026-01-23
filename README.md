@@ -1,23 +1,26 @@
 # vpython_imu_tracker
 Displays IMU data with VPython to show IMU orientation with updates at 200 Hz. 
 
-The imU_animate.py creates Breadboard representation to match IRL to show motion and oreientation.
+The imu_animate.py creates Breadboard representation to match IRL to show motion and oreientation.
 Breadboard in translucent white, with Raspberry Pi Pico mounted on top of board in Green and BNO086 in Red. 
 In addition, short/thick  arrows showing the breadboard's orientation.
 
 Longer thick arrows show the static World axes: Red in X, Green in Y, Blue in Z, RGB in RHS (X, Y, Z). 
-Vpython display shows X as left & right, Y as top & bottom, and Z as In & out.
+VPython display shows X as left & right, Y as top & bottom, and Z as In & out.
 
 <img alt="Output1" src="imgs/vpython-imu-tracker-1.png" width="350"/> <img alt="Output2" src="imgs/vpython-imu-tracker-2.png" width="350"/>
 
 This code uses an IMU's quaternion output(r, i, j, k) at 200 fps (update 5ms).
-This repo also contains quaternion_output.py that can be run using Micropython on a conroller accessing a BNO08x sensor.
-It uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data.
+An example program to run on Raspberry Pi with BNO sensor in this repo is called: 
+```
+quaternion_stream_spi.py
+```
+It uses my bno08x library (I2C, SPI, UART) to efficiently read IMU data. See that library and examples for converting this program to I2C or UART.
 https://github.com/bradcar/bno08x_i2c_spi_MicroPython
 
 Quaternions uniquely represent every rotation in 3D space. 
 Because of this, quaternions are used in computer game implmentations. 
-This Vpython code is completely implemented using quaternions.
+This VPython code is completely implemented using quaternions.
 
 The reason we don't use Euler Angles is that have issues with Gimbal Lock.
 With Euler angle implementations, some orientations have multiple valid representations.
@@ -26,7 +29,7 @@ https://en.wikipedia.org/wiki/Gimbal_lock
 
 Credits:
 Inspired by Paul McWhorter's instruction videos
-9-Axis IMU LESSON 21: Visualizing 3D Rotations in Vpython using Quaternions
+9-Axis IMU LESSON 21: Visualizing 3D Rotations in VPython using Quaternions
 https://www.youtube.com/watch?v=S77r-P6YxAU
 
 ## Loop timing
@@ -59,8 +62,8 @@ Most computer games use this implementation for smooth and predictable graphics.
 - https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation
 - https://www.youtube.com/watch?v=zjMuIxRvygQ
 
-## Vpython Conventions:
-Default Axes in Vpython
+## VPython Conventions:
+Default Axes in VPython
  - X axis → X+ right screen, X- left screen
  - Y axis → Y+ up screen, Y- down screen
  - Z axis → Z+ toward camera (out) and Z- away from camera (in)
@@ -70,7 +73,7 @@ Default Axes in Vpython
        | /
        o------ +X
     
-Vpython uses Positive rotation Right-Hand Rule about each axis:
+VPython uses Positive rotation Right-Hand Rule about each axis:
  - Around +X: Y moves toward Z. 
  - Around +Y: Z moves toward X.
  - Around +Z: X moves toward Y.
